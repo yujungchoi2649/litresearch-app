@@ -3,7 +3,7 @@
 An AI tool that automates academic literature research and generates novel research hypotheses using Retrieval-Augmented Generation (RAG) + LLM reasoning.
 
 ## What it does
-1. Fetches papers from arXiv and Semantic Scholar on any research topic
+1. Fetches papers from arXiv, Semantic Scholar and Sciencedirect on any research topic
 2. Embeds and indexes them locally using FAISS + sentence-transformers
 3. Uses Llama 3.3 70B (via Groq) to synthesize the field, identify gaps, and generate novel hypotheses
 4. Saves a structured Markdown report with references
