@@ -1,5 +1,5 @@
 import streamlit as st
-import faiss
+#import faiss
 import pickle
 from sentence_transformers import SentenceTransformer
 from groq import Groq
