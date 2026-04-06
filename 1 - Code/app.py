@@ -127,25 +127,24 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @st.cache_resource
 def load_resources():
-    index = faiss.read_index(os.path.join(BASE_DIR, "papers.index"))
+    embeddings = np.load(os.path.join(BASE_DIR, "embeddings.npy"))
     with open(os.path.join(BASE_DIR, "papers_metadata.pkl"), "rb") as f:
         data = pickle.load(f)
     model = SentenceTransformer("all-MiniLM-L6-v2")
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-    return index, data, model, client
+    groq_key = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY"))
+    client = Groq(api_key=groq_key)
+    return embeddings, data, model, client
 
-index, data, model, client = load_resources()
+embeddings, data, model, client = load_resources()
 papers_list = data['papers']
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
 def retrieve(query, top_k=8):
-    embedding = model.encode([query])
-    distances, indices = index.search(embedding, top_k)
-    results = []
-    for idx in indices[0]:
-        if idx < len(papers_list):
-            results.append(papers_list[idx])
-    return results
+    query_vec = model.encode([query])[0]
+    norms = np.linalg.norm(embeddings, axis=1)
+    query_norm = np.linalg.norm(query_vec)
+    similarities = np.dot(embeddings, query_vec) / (norms * query_norm + 1e-10)
+    top_indices = np.argsort(similarities)[::-1][:top_k]
+    return [papers_list[i] for i in top_indices if i < len(papers_list)]
 
 def build_context(results):
     context = ""
